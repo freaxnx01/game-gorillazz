@@ -1,0 +1,7 @@
+- rename to gorillazz
+- (splashscreen)
+- in game music
+- sound, flying banana, explosion, helicopter & jet
+- highscore
+- Dance when missed
+- Bored when missed

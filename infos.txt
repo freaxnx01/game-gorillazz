@@ -1,0 +1,5 @@
+https://en.wikipedia.org/wiki/Gorillas_(video_game)
+
+Initial prompt for Claude Code
+
+"Write a qbasic gorillas clone for the browser"

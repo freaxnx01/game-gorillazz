@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(explorer.exe index.html)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
