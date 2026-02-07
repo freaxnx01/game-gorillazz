@@ -47,7 +47,16 @@ const translations = {
         keyP: 'Spieler wechseln',
         keyE: 'Augen erstaunen ein/aus',
         keyG: 'Neue Skyline generieren',
-        dedication: 'Dieses Spiel ist Juliska gewidmet'
+        dedication: 'Dieses Spiel ist Juliska gewidmet',
+        highscoreButton: 'HIGHSCORES',
+        highscoreTitle: 'Highscores',
+        rank: 'Rang',
+        playerName: 'Spieler',
+        scoreLabel: 'Punkte',
+        noHighscores: 'Noch keine Highscores!',
+        newHighscore: 'Neuer Highscore!',
+        enterName: 'Gib deinen Namen ein:',
+        clearHighscores: 'Highscores löschen'
     },
     en: {
         title: 'GORILLAS',
@@ -88,7 +97,16 @@ const translations = {
         keyP: 'Switch player',
         keyE: 'Toggle astonished eyes',
         keyG: 'Generate new skyline',
-        dedication: 'This game is dedicated to Juliska'
+        dedication: 'This game is dedicated to Juliska',
+        highscoreButton: 'HIGHSCORES',
+        highscoreTitle: 'Highscores',
+        rank: 'Rank',
+        playerName: 'Player',
+        scoreLabel: 'Score',
+        noHighscores: 'No highscores yet!',
+        newHighscore: 'New Highscore!',
+        enterName: 'Enter your name:',
+        clearHighscores: 'Clear Highscores'
     },
     hu: {
         title: 'GORILLÁK',
@@ -129,7 +147,16 @@ const translations = {
         keyP: 'Játékos váltás',
         keyE: 'Csodálkozó szemek ki/be',
         keyG: 'Új égvonal generálása',
-        dedication: 'Ez a játék Juliskának van szentelve'
+        dedication: 'Ez a játék Juliskának van szentelve',
+        highscoreButton: 'TOPLISTÁK',
+        highscoreTitle: 'Toplista',
+        rank: 'Helyezés',
+        playerName: 'Játékos',
+        scoreLabel: 'Pont',
+        noHighscores: 'Még nincsenek pontszámok!',
+        newHighscore: 'Új rekord!',
+        enterName: 'Add meg a neved:',
+        clearHighscores: 'Toplista törlése'
     }
 };
 
@@ -1512,6 +1539,96 @@ function calculateHint() {
     };
 }
 
+// Highscore Management
+const HIGHSCORE_KEY = 'gorillazz_highscores';
+const MAX_HIGHSCORES = 10;
+
+function loadHighscores() {
+    try {
+        const stored = localStorage.getItem(HIGHSCORE_KEY);
+        return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+        console.error('Error loading highscores:', e);
+        return [];
+    }
+}
+
+function saveHighscores(highscores) {
+    try {
+        localStorage.setItem(HIGHSCORE_KEY, JSON.stringify(highscores));
+    } catch (e) {
+        console.error('Error saving highscores:', e);
+    }
+}
+
+function addHighscore(name, score) {
+    const highscores = loadHighscores();
+    highscores.push({ name, score, date: new Date().toISOString() });
+    highscores.sort((a, b) => b.score - a.score);
+    const trimmed = highscores.slice(0, MAX_HIGHSCORES);
+    saveHighscores(trimmed);
+    return trimmed;
+}
+
+function isHighscore(score) {
+    const highscores = loadHighscores();
+    if (highscores.length < MAX_HIGHSCORES) {
+        return true;
+    }
+    return score > highscores[highscores.length - 1].score;
+}
+
+function clearHighscores() {
+    try {
+        localStorage.removeItem(HIGHSCORE_KEY);
+    } catch (e) {
+        console.error('Error clearing highscores:', e);
+    }
+}
+
+function displayHighscores() {
+    const highscores = loadHighscores();
+    const listElement = document.getElementById('highscoreList');
+    
+    if (highscores.length === 0) {
+        listElement.innerHTML = `<div class="highscore-empty" data-i18n="noHighscores">${t('noHighscores')}</div>`;
+        return;
+    }
+    
+    listElement.innerHTML = highscores.map((entry, index) => {
+        let rankClass = '';
+        if (index === 0) rankClass = 'first';
+        else if (index === 1) rankClass = 'second';
+        else if (index === 2) rankClass = 'third';
+        
+        return `
+            <div class="highscore-item">
+                <div class="highscore-rank ${rankClass}">${index + 1}</div>
+                <div class="highscore-name">${escapeHtml(entry.name)}</div>
+                <div class="highscore-score">${entry.score}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function checkAndRecordHighscore(playerNum, score) {
+    if (score > 0 && isHighscore(score)) {
+        const playerName = prompt(t('newHighscore') + '\n' + t('enterName'), t('player') + ' ' + playerNum);
+        if (playerName && playerName.trim()) {
+            addHighscore(playerName.trim(), score);
+            // Show highscore modal
+            displayHighscores();
+            document.getElementById('highscoreModal').classList.add('show');
+        }
+    }
+}
+
 // Event listeners
 document.getElementById('throwBtn').addEventListener('click', () => {
     if (game.animating) return;
@@ -1555,6 +1672,14 @@ document.getElementById('hintBtn').addEventListener('click', () => {
 });
 
 document.getElementById('resetBtn').addEventListener('click', () => {
+    // Check for highscores before resetting
+    if (game.scores[0] > 0) {
+        checkAndRecordHighscore(1, game.scores[0]);
+    }
+    if (game.scores[1] > 0) {
+        checkAndRecordHighscore(2, game.scores[1]);
+    }
+    
     game.scores = [0, 0];
     updateScores();
     initGame();
@@ -1738,6 +1863,23 @@ document.getElementById('closeKeysBtn').addEventListener('click', () => {
     document.getElementById('keysModal').classList.remove('show');
 });
 
+// Highscore modal
+document.getElementById('highscoreBtn').addEventListener('click', () => {
+    displayHighscores();
+    document.getElementById('highscoreModal').classList.add('show');
+});
+
+document.getElementById('closeHighscoreBtn').addEventListener('click', () => {
+    document.getElementById('highscoreModal').classList.remove('show');
+});
+
+document.getElementById('clearHighscoresBtn').addEventListener('click', () => {
+    if (confirm(t('clearHighscores') + '?')) {
+        clearHighscores();
+        displayHighscores();
+    }
+});
+
 // Close modals when clicking outside
 document.getElementById('settingsModal').addEventListener('click', (e) => {
     if (e.target.id === 'settingsModal') {
@@ -1754,6 +1896,12 @@ document.getElementById('creditsModal').addEventListener('click', (e) => {
 document.getElementById('keysModal').addEventListener('click', (e) => {
     if (e.target.id === 'keysModal') {
         document.getElementById('keysModal').classList.remove('show');
+    }
+});
+
+document.getElementById('highscoreModal').addEventListener('click', (e) => {
+    if (e.target.id === 'highscoreModal') {
+        document.getElementById('highscoreModal').classList.remove('show');
     }
 });
 

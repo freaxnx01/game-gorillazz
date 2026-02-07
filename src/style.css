@@ -257,6 +257,18 @@ button {
     transform: scale(1.05);
 }
 
+.highscore-btn {
+    background: #4169E1;
+    color: #fff;
+    border-color: #1E90FF;
+}
+
+.highscore-btn:hover {
+    background: #1E90FF;
+    box-shadow: 0 0 15px rgba(30, 144, 255, 0.4);
+    transform: scale(1.05);
+}
+
 /* Modal styles */
 .modal {
     display: none;
@@ -463,6 +475,114 @@ button {
     margin: 0;
     border-radius: 0 0 7px 7px;
     border-top: 3px solid #ffcc00;
+}
+
+/* Highscore Modal Styles */
+.highscore-modal {
+    min-width: 500px;
+}
+
+.highscore-table {
+    margin: 20px 0;
+    background: #2a2a2a;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.highscore-header {
+    display: grid;
+    grid-template-columns: 80px 1fr 100px;
+    gap: 15px;
+    padding: 15px;
+    background: #0a0a0a;
+    border-bottom: 2px solid #ffcc00;
+    font-weight: bold;
+    color: #ffcc00;
+    font-size: 1.2em;
+    text-align: center;
+}
+
+.highscore-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.highscore-item {
+    display: grid;
+    grid-template-columns: 80px 1fr 100px;
+    gap: 15px;
+    padding: 15px;
+    border-bottom: 1px solid #1a1a1a;
+    transition: background 0.3s;
+    text-align: center;
+    align-items: center;
+}
+
+.highscore-item:hover {
+    background: #1a1a1a;
+}
+
+.highscore-item:last-child {
+    border-bottom: none;
+}
+
+.highscore-rank {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #ffcc00;
+}
+
+.highscore-rank.first {
+    color: #FFD700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.highscore-rank.second {
+    color: #C0C0C0;
+}
+
+.highscore-rank.third {
+    color: #CD7F32;
+}
+
+.highscore-name {
+    font-size: 1.2em;
+    color: #fff;
+    text-align: left;
+}
+
+.highscore-score {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #ff6600;
+}
+
+.highscore-empty {
+    padding: 40px;
+    text-align: center;
+    color: #888;
+    font-size: 1.2em;
+}
+
+.highscore-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.highscore-buttons .modal-btn {
+    flex: 1;
+    margin: 0;
+}
+
+.clear-btn {
+    background: #8B0000;
+    border-color: #ff6600;
+}
+
+.clear-btn:hover {
+    background: #A52A2A;
+    box-shadow: 0 0 15px rgba(255, 102, 0, 0.4);
 }
 
 @media (max-width: 768px) {

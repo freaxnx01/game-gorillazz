@@ -44,6 +44,7 @@
             <button id="hintBtn" class="hint-btn" data-i18n="hintButton">HINWEIS</button>
             <button id="resetBtn" class="reset-btn" data-i18n="newGameButton">NEUES SPIEL</button>
             <button id="settingsBtn" class="settings-btn" data-i18n="settingsButton">EINSTELLUNGEN</button>
+            <button id="highscoreBtn" class="highscore-btn" data-i18n="highscoreButton">HIGHSCORES</button>
             <button id="creditsBtn" class="credits-btn" data-i18n="creditsButton">CREDITS</button>
             <button id="keysBtn" class="keys-btn" data-i18n="keysButton">KEYS</button>
         </div>
@@ -130,6 +131,27 @@
                 </div>
             </div>
             <button id="closeKeysBtn" class="modal-btn" data-i18n="closeButton">Schließen</button>
+        </div>
+    </div>
+
+    <!-- Highscore Modal -->
+    <div id="highscoreModal" class="modal">
+        <div class="modal-content highscore-modal">
+            <h2 data-i18n="highscoreTitle">Highscores</h2>
+            <div class="highscore-table">
+                <div class="highscore-header">
+                    <span data-i18n="rank">Rang</span>
+                    <span data-i18n="playerName">Spieler</span>
+                    <span data-i18n="scoreLabel">Punkte</span>
+                </div>
+                <div id="highscoreList" class="highscore-list">
+                    <!-- Highscores will be inserted here -->
+                </div>
+            </div>
+            <div class="highscore-buttons">
+                <button id="clearHighscoresBtn" class="modal-btn clear-btn" data-i18n="clearHighscores">Highscores löschen</button>
+                <button id="closeHighscoreBtn" class="modal-btn" data-i18n="closeButton">Schließen</button>
+            </div>
         </div>
     </div>
 
