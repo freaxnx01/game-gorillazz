@@ -313,6 +313,57 @@ button {
     cursor: pointer;
 }
 
+.setting-item select {
+    width: 100%;
+    margin-top: 10px;
+    padding: 8px;
+    font-size: 1em;
+    font-family: 'Courier New', monospace;
+    background: #1a1a1a;
+    color: #ffcc00;
+    border: 2px solid #ffcc00;
+    border-radius: 4px;
+}
+
+.music-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.secondary-btn {
+    margin-top: 0;
+    background: #2E8B57;
+    border-color: #3CB371;
+    color: #fff;
+}
+
+.secondary-btn:hover {
+    background: #3CB371;
+    box-shadow: 0 0 15px rgba(60, 179, 113, 0.4);
+}
+
+.secondary-btn:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+.music-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    background: #1a1a1a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 0.95em;
+}
+
+.music-status-label {
+    color: #ffcc00;
+}
+
 .modal-btn {
     background: #0f3460;
     color: #ffcc00;

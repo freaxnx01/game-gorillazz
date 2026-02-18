@@ -70,6 +70,27 @@
                     <span data-i18n="helpingModeSetting">Hilfslinie anzeigen</span>
                 </label>
             </div>
+            <div class="setting-item">
+                <label>
+                    <input type="checkbox" id="musicToggle">
+                    <span data-i18n="musicEnabledSetting">In-Game Musik</span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <label for="musicProfileSelect" data-i18n="musicProfileSetting">Musik-Profil</label>
+                <select id="musicProfileSelect">
+                    <option value="pulse_soft">Pulse Soft</option>
+                    <option value="pulse_bright">Pulse Bright</option>
+                    <option value="pulse_crunch">Pulse Crunch</option>
+                </select>
+            </div>
+            <div class="setting-item music-actions">
+                <button id="generateMusicBtn" class="modal-btn secondary-btn" data-i18n="musicGenerateButton">MUSIK ERZEUGEN</button>
+                <div class="music-status">
+                    <span class="music-status-label" data-i18n="musicStatusLabel">Musikstatus:</span>
+                    <span id="musicStatusValue" data-i18n="musicStatusIdle">Leerlauf</span>
+                </div>
+            </div>
             <button id="closeSettingsBtn" class="modal-btn" data-i18n="closeButton">Schließen</button>
         </div>
     </div>
@@ -133,6 +154,7 @@
         </div>
     </div>
 
+    <script src="audio.js"></script>
     <script src="gorillas.js"></script>
 </body>
 </html>
