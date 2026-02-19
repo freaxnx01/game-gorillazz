@@ -14,6 +14,11 @@ The game is automatically deployed and available at: **https://freaxnx01.github.
 - Building destruction mode
 - Trajectory helper line
 - Keyboard shortcuts for various game features
+- AI-generated in-game music (browser runtime)
+
+## AI Music Documentation
+
+- Runtime architecture and lifecycle: `docs/AI_MUSIC_RUNTIME.md`
 
 ## Development
 

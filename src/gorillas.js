@@ -59,6 +59,7 @@ const translations = {
         keyP: 'Spieler wechseln',
         keyE: 'Augen erstaunen ein/aus',
         keyG: 'Neue Skyline generieren',
+        keyM: 'Musik ein/aus',
         dedication: 'Dieses Spiel ist Juliska gewidmet'
     },
     en: {
@@ -112,6 +113,7 @@ const translations = {
         keyP: 'Switch player',
         keyE: 'Toggle astonished eyes',
         keyG: 'Generate new skyline',
+        keyM: 'Toggle music on/off',
         dedication: 'This game is dedicated to Juliska'
     },
     hu: {
@@ -165,6 +167,7 @@ const translations = {
         keyP: 'Játékos váltás',
         keyE: 'Csodálkozó szemek ki/be',
         keyG: 'Új égvonal generálása',
+        keyM: 'Zene be/ki',
         dedication: 'Ez a játék Juliskának van szentelve'
     }
 };
@@ -1529,11 +1532,14 @@ async function generateAndPlayMusic() {
     updateMusicStatusLabel();
 
     try {
+        const generatedTempo = 110 + Math.floor(Math.random() * 51);
         const loop = await audioEngine.generateLoop({
             soundProfile: settings.selectedSoundProfile,
             bars: 8,
-            tempo: 132
+            tempo: generatedTempo,
+            seed: `${Date.now()}-${Math.random()}`
         });
+        audioEngine.stopLoop();
         audioEngine.playLoop(loop);
         settings.musicStatus = 'ready';
         showMessage(t('musicGenerationReady'));
@@ -1544,7 +1550,8 @@ async function generateAndPlayMusic() {
         if (audioEngine) {
             audioEngine.stopLoop();
         }
-        showMessage(t('musicGenerationFailed'));
+        const detail = error && error.message ? ` (${error.message})` : '';
+        showMessage(`${t('musicGenerationFailed')}${detail}`);
         console.error('Music generation failed:', error);
     } finally {
         updateMusicStatusLabel();
@@ -1794,6 +1801,15 @@ document.addEventListener('keydown', (e) => {
             initGame();
         }
     }
+
+    // Toggle music with 'm' key
+    if (e.key === 'm' || e.key === 'M') {
+        const musicToggle = document.getElementById('musicToggle');
+        if (musicToggle) {
+            musicToggle.checked = !musicToggle.checked;
+            musicToggle.dispatchEvent(new Event('change'));
+        }
+    }
 });
 
 // Language switching function
@@ -1887,7 +1903,8 @@ document.getElementById('musicToggle').addEventListener('change', async (e) => {
         audioEngine.playLoop();
         settings.musicStatus = 'ready';
     } else {
-        settings.musicStatus = 'idle';
+        await generateAndPlayMusic();
+        return;
     }
     updateMusicStatusLabel();
 });
@@ -1999,6 +2016,15 @@ initGame();
 updateBackground(); // Start background animation loop
 updateUILanguage(); // Set initial language
 updateMusicStatusLabel();
+
+function disposeAudioSession() {
+    if (audioEngine && typeof audioEngine.dispose === 'function') {
+        audioEngine.dispose();
+    }
+}
+
+window.addEventListener('pagehide', disposeAudioSession);
+window.addEventListener('beforeunload', disposeAudioSession);
 
 window.runMusicModelBenchmark = async function runMusicModelBenchmark() {
     if (!audioEngine) {
