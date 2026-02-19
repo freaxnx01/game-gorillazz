@@ -195,7 +195,8 @@ const settings = {
     lastTrajectoryUpdate: 0,
     musicEnabled: false,
     selectedSoundProfile: 'pulse_soft',
-    musicStatus: 'idle'
+    musicStatus: 'idle',
+    musicGenerateClickCount: 0
 };
 
 // Game state
@@ -1528,17 +1529,26 @@ async function generateAndPlayMusic() {
         generateButton.disabled = true;
     }
 
+    settings.musicGenerateClickCount += 1;
     settings.musicStatus = 'generating';
     updateMusicStatusLabel();
 
     try {
         const generatedTempo = 110 + Math.floor(Math.random() * 51);
-        const loop = await audioEngine.generateLoop({
-            soundProfile: settings.selectedSoundProfile,
-            bars: 8,
-            tempo: generatedTempo,
-            seed: `${Date.now()}-${Math.random()}`
-        });
+        const playPublicDomainMelody = settings.musicGenerateClickCount % 5 === 0
+            && typeof audioEngine.generatePublicDomainLoop === 'function';
+        const loop = playPublicDomainMelody
+            ? audioEngine.generatePublicDomainLoop({
+                soundProfile: settings.selectedSoundProfile,
+                bars: 8,
+                tempo: 122
+            })
+            : await audioEngine.generateLoop({
+                soundProfile: settings.selectedSoundProfile,
+                bars: 8,
+                tempo: generatedTempo,
+                seed: `${Date.now()}-${Math.random()}`
+            });
         audioEngine.stopLoop();
         audioEngine.playLoop(loop);
         settings.musicStatus = 'ready';

@@ -529,6 +529,78 @@
             return bestLoop;
         }
 
+        generatePublicDomainLoop(params = {}) {
+            const bars = Math.max(2, Number(params.bars) || 8);
+            const stepsPerBar = 16;
+            const totalSteps = bars * stepsPerBar;
+            const tempo = Number(params.tempo) || 122;
+            const soundProfile = params.soundProfile || 'pulse_soft';
+
+            // Public-domain melody: Beethoven - Ode to Joy.
+            const basePhrase = [
+                64, 64, 65, 67, 67, 65, 64, 62,
+                60, 60, 62, 64, 64, 62, 62,
+                64, 64, 65, 67, 67, 65, 64, 62,
+                60, 60, 62, 64, 62, 60, 60
+            ];
+
+            const melody = [];
+            let stepCursor = 0;
+            while (stepCursor < totalSteps) {
+                for (let i = 0; i < basePhrase.length && stepCursor < totalSteps; i += 1) {
+                    const pitch = basePhrase[i];
+                    const noteLength = (i % 7 === 3) ? 3 : 2;
+                    melody.push({
+                        step: stepCursor,
+                        length: Math.min(noteLength, totalSteps - stepCursor),
+                        pitch: pitch,
+                        velocity: 0.72
+                    });
+                    stepCursor += 2;
+                }
+            }
+
+            const bass = [];
+            const bassRoots = [36, 41, 43, 36];
+            for (let bar = 0; bar < bars; bar += 1) {
+                const root = bassRoots[bar % bassRoots.length];
+                const start = bar * stepsPerBar;
+                bass.push({ step: start, length: 4, pitch: root, velocity: 0.62 });
+                bass.push({ step: start + 4, length: 4, pitch: root + 7, velocity: 0.56 });
+                bass.push({ step: start + 8, length: 4, pitch: root + 12, velocity: 0.59 });
+                bass.push({ step: start + 12, length: 4, pitch: root + 7, velocity: 0.55 });
+            }
+
+            const noise = [];
+            for (let step = 0; step < totalSteps; step += 4) {
+                noise.push({ step: step + 1, length: 1, pitch: 36, velocity: 0.42 });
+                if ((step / 4) % 2 === 0) {
+                    noise.push({ step: step + 3, length: 1, pitch: 36, velocity: 0.34 });
+                }
+            }
+
+            const loopData = {
+                tempo: tempo,
+                stepsPerBar: stepsPerBar,
+                totalSteps: totalSteps,
+                profile: soundProfile,
+                tracks: [
+                    { wave: 'square', notes: melody },
+                    { wave: 'square', notes: bass },
+                    { wave: 'noise', notes: noise }
+                ]
+            };
+
+            this.onDebug('public_domain_melody', {
+                name: 'ode_to_joy',
+                totalSteps: totalSteps,
+                tempo: tempo
+            });
+
+            this.lastGeneratedLoop = this.cloneLoopData(loopData);
+            return loopData;
+        }
+
         buildPrimerSequence(soundProfile, tempo, seed, variant = 0) {
             const scales = {
                 pulse_soft: [60, 62, 64, 67, 69, 72],
