@@ -1,75 +1,75 @@
 # AI Music Runtime (Client-Only)
 
-## Ziel
-Die Musikgenerierung läuft ausschliesslich im Browser des Clients:
+## Goal
+Music generation runs exclusively in the client browser:
 
-- Kein Server-Side Inference.
-- Keine persistente Speicherung des Modells im Anwendungscode.
-- Modell und Runtime werden pro Browser-Session geladen.
-- Beim Schliessen von Tab/Fenster wird das Modell aktiv freigegeben.
+- No server-side inference.
+- No persistent model storage in application code.
+- Model and runtime are loaded per browser session.
+- The model is explicitly released when the tab or window is closed.
 
-## Architektur
-Die Audio-Engine ist in `src/audio.js` implementiert.
+## Architecture
+The audio engine is implemented in `src/audio.js`.
 
-### 1) Lazy Runtime Load im Browser
-Die Libraries werden erst geladen, wenn Musik tatsächlich benötigt wird:
+### 1) Lazy Runtime Load in the Browser
+Libraries are loaded only when music is actually needed:
 
 - TensorFlow.js (`tf.min.js`)
 - Magenta Music (`magentamusic.js`)
 
-Relevante Funktionen:
+Relevant functions:
 
 - `ensureRuntimeLibraries()`
 - `loadRuntimeScript(baseUrl, key)`
 
-Die Script-URLs werden mit einer Session-ID versehen (`?session=...`), damit jede neue Page-Session einen frischen Runtime-Kontext aufbaut.
+Script URLs are tagged with a session ID (`?session=...`) so each new page session gets a fresh runtime context.
 
-### 2) Modellinitialisierung
-Das Modell ist:
+### 2) Model Initialisation
+The model is:
 
 - `Magenta MusicRNN basic_rnn`
 
-Es wird in der Audio-Engine initialisiert via:
+It is initialised in the audio engine via:
 
 - `ensureMusicRnnModel()`
 - `new mm.MusicRNN(MUSIC_RNN_CHECKPOINT)`
 - `model.initialize()`
 
-### 3) Generierung
-Bei Klick auf "Musik erzeugen" läuft:
+### 3) Generation
+When the user clicks "Generate Music", the following flow runs:
 
 - `generateAndPlayMusic()` in `src/gorillas.js`
 - `audioEngine.generateLoop(...)`
-- intern `generateMusicRnnLoop(...)`
+- internally `generateMusicRnnLoop(...)`
 
-Die Engine erzeugt mehrere Kandidaten und wählt den melodisch unterschiedlichsten zum letzten Theme.
+The engine generates multiple candidates and chooses the one that is most melodically different from the previous theme.
 
-### 4) Wiedergabe
-Die Engine rendert die Note-Sequenz mit Web Audio:
+### 4) Playback
+The engine renders the note sequence with Web Audio:
 
 - `playLoop(...)`
 - `schedulerTick()`
 - `scheduleSquare(...)` / `scheduleNoise(...)`
 
-### 5) Session-Ende / Cleanup
-Beim Verlassen der Seite wird freigegeben:
+### 5) Session End / Cleanup
+On page exit, resources are released:
 
 - `disposeAudioSession()` in `src/gorillas.js`
-- Hooks: `pagehide` und `beforeunload`
-- `audioEngine.dispose()` setzt Modell und interne Daten zurück und ruft `musicRnnModel.dispose()` auf.
+- hooks: `pagehide` and `beforeunload`
+- `audioEngine.dispose()` resets model and internal data and calls `musicRnnModel.dispose()`.
 
-## Verifikation in DevTools
-1. DevTools öffnen.
-2. Network-Tab aufrufen.
-3. "Musik erzeugen" klicken.
-4. Prüfen, dass Runtime/Modell im Browser geladen werden.
-5. Console prüfen auf:
+## Verification in DevTools
+1. Open DevTools.
+2. Open the Network tab.
+3. Click "Generate Music".
+4. Verify that runtime and model assets are loaded in the browser.
+5. Check the Console for:
    - `[AudioEngine] music_model_selected`
    - `[AudioEngine] music_generation`
    - `[AudioEngine] theme_difference`
-6. Tab schliessen und neu öffnen.
-7. Erneut "Musik erzeugen" klicken: Runtime/Modell werden für die neue Session erneut geladen.
+6. Close the tab and open it again.
+7. Click "Generate Music" again: runtime and model should reload for the new session.
 
-## Grenzen
-- HTTP-Caching wird vom Browser verwaltet; die App schreibt keine persistente Modellkopie.
-- Die Laufzeitdaten (Modellobjekt, Sequenzen, Loop-State) existieren nur im RAM der aktuellen Session.
+## Limits
+- HTTP caching is managed by the browser; the app does not write a persistent model copy.
+- Runtime data (model object, sequences, loop state) exists only in RAM for the current session.
