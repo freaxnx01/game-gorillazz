@@ -70,6 +70,27 @@
                     <span data-i18n="helpingModeSetting">Hilfslinie anzeigen</span>
                 </label>
             </div>
+            <div class="setting-item">
+                <label>
+                    <input type="checkbox" id="musicToggle">
+                    <span data-i18n="musicEnabledSetting">In-Game Musik</span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <label for="musicProfileSelect" data-i18n="musicProfileSetting">Musik-Profil</label>
+                <select id="musicProfileSelect">
+                    <option value="pulse_soft">Pulse Soft</option>
+                    <option value="pulse_bright">Pulse Bright</option>
+                    <option value="pulse_crunch">Pulse Crunch</option>
+                </select>
+            </div>
+            <div class="setting-item music-actions">
+                <button id="generateMusicBtn" class="modal-btn secondary-btn" data-i18n="musicGenerateButton">MUSIK ERZEUGEN</button>
+                <div class="music-status">
+                    <span class="music-status-label" data-i18n="musicStatusLabel">Musikstatus:</span>
+                    <span id="musicStatusValue" data-i18n="musicStatusIdle">Leerlauf</span>
+                </div>
+            </div>
             <button id="closeSettingsBtn" class="modal-btn" data-i18n="closeButton">Schließen</button>
         </div>
     </div>
@@ -128,11 +149,16 @@
                     <span class="key-name">G</span>
                     <span class="key-desc" data-i18n="keyG">Neue Skyline generieren</span>
                 </div>
+                <div class="key-item">
+                    <span class="key-name">M</span>
+                    <span class="key-desc" data-i18n="keyM">Musik ein/aus</span>
+                </div>
             </div>
             <button id="closeKeysBtn" class="modal-btn" data-i18n="closeButton">Schließen</button>
         </div>
     </div>
 
-    <script src="gorillas.js"></script>
+    <script src="audio.js?v=20260219-1"></script>
+    <script src="gorillas.js?v=20260219-1"></script>
 </body>
 </html>

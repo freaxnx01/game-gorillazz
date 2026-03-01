@@ -36,6 +36,18 @@ const translations = {
         settingsTitle: 'Einstellungen',
         destroyBuildingSetting: 'Gebäude zerstören',
         helpingModeSetting: 'Hilfslinie anzeigen',
+        musicEnabledSetting: 'In-Game Musik',
+        musicProfileSetting: 'Musik-Profil',
+        musicGenerateButton: 'MUSIK ERZEUGEN',
+        musicStatusLabel: 'Musikstatus:',
+        musicStatusIdle: 'Leerlauf',
+        musicStatusGenerating: 'Wird erzeugt...',
+        musicStatusReady: 'Bereit',
+        musicStatusError: 'Fehler',
+        musicGenerationFailed: 'Musik konnte nicht erzeugt werden.',
+        musicGenerationReady: 'Musik läuft.',
+        musicDisabled: 'Musik deaktiviert.',
+        musicNotSupported: 'Audio wird von diesem Browser nicht unterstützt.',
         closeButton: 'Schließen',
         keysButton: 'KEYS',
         keysTitle: 'Tastenkombinationen',
@@ -47,6 +59,7 @@ const translations = {
         keyP: 'Spieler wechseln',
         keyE: 'Augen erstaunen ein/aus',
         keyG: 'Neue Skyline generieren',
+        keyM: 'Musik ein/aus',
         dedication: 'Dieses Spiel ist Juliska gewidmet'
     },
     en: {
@@ -77,6 +90,18 @@ const translations = {
         settingsTitle: 'Settings',
         destroyBuildingSetting: 'Destroy Buildings',
         helpingModeSetting: 'Show helping line',
+        musicEnabledSetting: 'In-game music',
+        musicProfileSetting: 'Music profile',
+        musicGenerateButton: 'GENERATE MUSIC',
+        musicStatusLabel: 'Music status:',
+        musicStatusIdle: 'Idle',
+        musicStatusGenerating: 'Generating...',
+        musicStatusReady: 'Ready',
+        musicStatusError: 'Error',
+        musicGenerationFailed: 'Music generation failed.',
+        musicGenerationReady: 'Music is playing.',
+        musicDisabled: 'Music disabled.',
+        musicNotSupported: 'Audio is not supported in this browser.',
         closeButton: 'Close',
         keysButton: 'KEYS',
         keysTitle: 'Keyboard Shortcuts',
@@ -88,6 +113,7 @@ const translations = {
         keyP: 'Switch player',
         keyE: 'Toggle astonished eyes',
         keyG: 'Generate new skyline',
+        keyM: 'Toggle music on/off',
         dedication: 'This game is dedicated to Juliska'
     },
     hu: {
@@ -119,6 +145,18 @@ const translations = {
         settingsTitle: 'Beállítások',
         destroyBuildingSetting: 'Épületek rombolása',
         helpingModeSetting: 'Segédvonal megjelenítése',
+        musicEnabledSetting: 'Játékon belüli zene',
+        musicProfileSetting: 'Zenei profil',
+        musicGenerateButton: 'ZENE GENERÁLÁSA',
+        musicStatusLabel: 'Zene állapota:',
+        musicStatusIdle: 'Készenlét',
+        musicStatusGenerating: 'Generálás...',
+        musicStatusReady: 'Kész',
+        musicStatusError: 'Hiba',
+        musicGenerationFailed: 'A zene generálása sikertelen.',
+        musicGenerationReady: 'A zene szól.',
+        musicDisabled: 'A zene kikapcsolva.',
+        musicNotSupported: 'A böngésző nem támogatja a hangot.',
         closeButton: 'Bezárás',
         keysTitle: 'Billentyűparancsok',
         keyEnter: 'Banán dobása',
@@ -129,6 +167,7 @@ const translations = {
         keyP: 'Játékos váltás',
         keyE: 'Csodálkozó szemek ki/be',
         keyG: 'Új égvonal generálása',
+        keyM: 'Zene be/ki',
         dedication: 'Ez a játék Juliskának van szentelve'
     }
 };
@@ -153,7 +192,11 @@ const settings = {
     heartBuilding: null,
     helpingMode: false,
     trajectoryProgress: 0,
-    lastTrajectoryUpdate: 0
+    lastTrajectoryUpdate: 0,
+    musicEnabled: false,
+    selectedSoundProfile: 'pulse_soft',
+    musicStatus: 'idle',
+    musicGenerateClickCount: 0
 };
 
 // Game state
@@ -177,6 +220,34 @@ const game = {
     helicopter: null,
     f16: null
 };
+
+const audioEngine = typeof AudioEngine === 'function'
+    ? new AudioEngine({
+        onStatusChange: (status, detail) => {
+            settings.musicStatus = status;
+            updateMusicStatusLabel();
+            if (detail) {
+                console.debug('Audio status detail:', detail);
+            }
+        },
+        onDebug: (event, payload) => {
+            console.debug(`[AudioEngine] ${event}`, payload);
+        }
+    })
+    : null;
+
+function updateMusicStatusLabel() {
+    const statusElement = document.getElementById('musicStatusValue');
+    if (!statusElement) return;
+
+    const map = {
+        idle: 'musicStatusIdle',
+        generating: 'musicStatusGenerating',
+        ready: 'musicStatusReady',
+        error: 'musicStatusError'
+    };
+    statusElement.textContent = t(map[settings.musicStatus] || 'musicStatusIdle');
+}
 
 // Building class
 class Building {
@@ -1066,6 +1137,9 @@ function initGame() {
     ));
 
     updateGameInfo();
+    if (settings.musicEnabled && audioEngine && audioEngine.hasLoop()) {
+        audioEngine.playLoop();
+    }
     draw();
 }
 
@@ -1420,6 +1494,83 @@ function updateScores() {
     document.getElementById('score2').textContent = game.scores[1];
 }
 
+async function ensureAudioReady() {
+    if (!audioEngine) {
+        settings.musicStatus = 'error';
+        updateMusicStatusLabel();
+        showMessage(t('musicNotSupported'));
+        return false;
+    }
+
+    try {
+        await audioEngine.resumeFromGesture();
+        return true;
+    } catch (error) {
+        settings.musicStatus = 'error';
+        updateMusicStatusLabel();
+        showMessage(t('musicNotSupported'));
+        console.error('Audio resume failed:', error);
+        return false;
+    }
+}
+
+async function generateAndPlayMusic() {
+    const generateButton = document.getElementById('generateMusicBtn');
+    if (!settings.musicEnabled) {
+        showMessage(t('musicDisabled'));
+        return;
+    }
+
+    if (!(await ensureAudioReady())) {
+        return;
+    }
+
+    if (generateButton) {
+        generateButton.disabled = true;
+    }
+
+    settings.musicGenerateClickCount += 1;
+    settings.musicStatus = 'generating';
+    updateMusicStatusLabel();
+
+    try {
+        const generatedTempo = 110 + Math.floor(Math.random() * 51);
+        const playPublicDomainMelody = settings.musicGenerateClickCount % 5 === 0
+            && typeof audioEngine.generatePublicDomainLoop === 'function';
+        const loop = playPublicDomainMelody
+            ? audioEngine.generatePublicDomainLoop({
+                soundProfile: settings.selectedSoundProfile,
+                bars: 8,
+                tempo: 122
+            })
+            : await audioEngine.generateLoop({
+                soundProfile: settings.selectedSoundProfile,
+                bars: 8,
+                tempo: generatedTempo,
+                seed: `${Date.now()}-${Math.random()}`
+            });
+        audioEngine.stopLoop();
+        audioEngine.playLoop(loop);
+        settings.musicStatus = 'ready';
+        showMessage(t('musicGenerationReady'));
+    } catch (error) {
+        settings.musicStatus = 'error';
+        settings.musicEnabled = false;
+        document.getElementById('musicToggle').checked = false;
+        if (audioEngine) {
+            audioEngine.stopLoop();
+        }
+        const detail = error && error.message ? ` (${error.message})` : '';
+        showMessage(`${t('musicGenerationFailed')}${detail}`);
+        console.error('Music generation failed:', error);
+    } finally {
+        updateMusicStatusLabel();
+        if (generateButton) {
+            generateButton.disabled = false;
+        }
+    }
+}
+
 // Calculate hint - find angle and velocity to hit opponent
 function calculateHint() {
     const thrower = game.gorillas[game.currentPlayer - 1];
@@ -1515,6 +1666,7 @@ function calculateHint() {
 // Event listeners
 document.getElementById('throwBtn').addEventListener('click', () => {
     if (game.animating) return;
+    ensureAudioReady();
 
     const angle = parseInt(document.getElementById('angle').value);
     const velocity = parseInt(document.getElementById('velocity').value);
@@ -1557,11 +1709,20 @@ document.getElementById('hintBtn').addEventListener('click', () => {
 document.getElementById('resetBtn').addEventListener('click', () => {
     game.scores = [0, 0];
     updateScores();
+    if (!settings.musicEnabled && audioEngine) {
+        audioEngine.stopLoop();
+    }
+    if (settings.musicEnabled && audioEngine && audioEngine.hasLoop()) {
+        audioEngine.playLoop();
+    }
     initGame();
 });
 
 // Keyboard controls
 document.addEventListener('keydown', (e) => {
+    if (settings.musicEnabled) {
+        ensureAudioReady();
+    }
     if (e.key === 'Enter' && !game.animating) {
         document.getElementById('throwBtn').click();
     }
@@ -1650,6 +1811,15 @@ document.addEventListener('keydown', (e) => {
             initGame();
         }
     }
+
+    // Toggle music with 'm' key
+    if (e.key === 'm' || e.key === 'M') {
+        const musicToggle = document.getElementById('musicToggle');
+        if (musicToggle) {
+            musicToggle.checked = !musicToggle.checked;
+            musicToggle.dispatchEvent(new Event('change'));
+        }
+    }
 });
 
 // Language switching function
@@ -1662,6 +1832,7 @@ function updateUILanguage() {
 
     // Update dynamic game messages
     updateGameInfo();
+    updateMusicStatusLabel();
 }
 
 // Language switcher event listeners
@@ -1697,6 +1868,9 @@ document.getElementById('settingsBtn').addEventListener('click', () => {
     document.getElementById('settingsModal').classList.add('show');
     document.getElementById('destroyBuildingToggle').checked = settings.destroyBuildings;
     document.getElementById('helpingModeToggle').checked = settings.helpingMode;
+    document.getElementById('musicToggle').checked = settings.musicEnabled;
+    document.getElementById('musicProfileSelect').value = settings.selectedSoundProfile;
+    updateMusicStatusLabel();
 });
 
 document.getElementById('closeSettingsBtn').addEventListener('click', () => {
@@ -1713,6 +1887,44 @@ document.getElementById('helpingModeToggle').addEventListener('change', (e) => {
         settings.trajectoryProgress = 0; // Reset animation
     }
     draw(); // Redraw immediately
+});
+
+document.getElementById('musicToggle').addEventListener('change', async (e) => {
+    settings.musicEnabled = e.target.checked;
+
+    if (!settings.musicEnabled) {
+        settings.musicStatus = 'idle';
+        if (audioEngine) {
+            audioEngine.stopLoop();
+        }
+        showMessage(t('musicDisabled'));
+        updateMusicStatusLabel();
+        return;
+    }
+
+    const ready = await ensureAudioReady();
+    if (!ready) {
+        settings.musicEnabled = false;
+        document.getElementById('musicToggle').checked = false;
+        return;
+    }
+
+    if (audioEngine && audioEngine.hasLoop()) {
+        audioEngine.playLoop();
+        settings.musicStatus = 'ready';
+    } else {
+        await generateAndPlayMusic();
+        return;
+    }
+    updateMusicStatusLabel();
+});
+
+document.getElementById('musicProfileSelect').addEventListener('change', (e) => {
+    settings.selectedSoundProfile = e.target.value;
+});
+
+document.getElementById('generateMusicBtn').addEventListener('click', async () => {
+    await generateAndPlayMusic();
 });
 
 // Credits modal
@@ -1813,3 +2025,32 @@ function drawCreditsBanana(canvasId) {
 initGame();
 updateBackground(); // Start background animation loop
 updateUILanguage(); // Set initial language
+updateMusicStatusLabel();
+
+function disposeAudioSession() {
+    if (audioEngine && typeof audioEngine.dispose === 'function') {
+        audioEngine.dispose();
+    }
+}
+
+window.addEventListener('pagehide', disposeAudioSession);
+window.addEventListener('beforeunload', disposeAudioSession);
+
+window.runMusicModelBenchmark = async function runMusicModelBenchmark() {
+    if (!audioEngine) {
+        console.warn('AudioEngine unavailable.');
+        return null;
+    }
+    await ensureAudioReady();
+    const benchmark = await audioEngine.runBenchmark();
+    console.table(benchmark.results.map(result => ({
+        model: result.id,
+        pass: Boolean(result.passes),
+        loadMs: result.loadMs || null,
+        generateMs: result.generateMs || null,
+        memoryMb: result.memoryMb || null,
+        coherence: result.coherence || null,
+        error: result.error || ''
+    })));
+    return benchmark;
+};
