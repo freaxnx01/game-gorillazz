@@ -22,7 +22,7 @@ The deployment workflow runs automatically when:
 
 1. **Checkout**: The workflow checks out the latest code from the repository
 2. **Configure Pages**: Sets up GitHub Pages configuration
-3. **Upload Artifact**: Uploads the contents of the `src` directory as a static site artifact
+3. **Upload Artifact**: Uploads the contents of the `docs` directory as a static site artifact
 4. **Deploy**: Deploys the artifact to GitHub Pages
 
 The entire process typically takes 1-2 minutes to complete.
@@ -76,7 +76,7 @@ permissions:
 
 ## Deployment Content
 
-The workflow deploys the `src` directory, which contains:
+The workflow deploys the `docs` directory, which contains:
 - `index.html` - Main game HTML file
 - `gorillas.js` - Game JavaScript code
 - `style.css` - Game styles
@@ -111,7 +111,7 @@ These files are served as a static website without any build process.
 Before pushing changes, you can test the game locally:
 
 ```bash
-cd src
+cd docs
 python -m http.server 8000
 ```
 

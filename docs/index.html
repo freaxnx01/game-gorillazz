@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gorillas - Browser Edition</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <div class="language-switcher">
+                <button id="langDE" class="lang-btn active">DE</button>
+                <button id="langEN" class="lang-btn">EN</button>
+                <button id="langHU" class="lang-btn">HU</button>
+            </div>
+            <h1 data-i18n="title">GORILLAS</h1>
+            <div class="scores">
+                <div class="player-info">
+                    <span class="player-name"><span data-i18n="player">Spieler</span> 1</span>
+                    <span class="score" id="score1">0</span>
+                </div>
+                <div class="player-info">
+                    <span class="player-name"><span data-i18n="player">Spieler</span> 2</span>
+                    <span class="score" id="score2">0</span>
+                </div>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div class="controls">
+            <div class="input-group">
+                <label for="angle" data-i18n="angle">Winkel:</label>
+                <input type="number" id="angle" min="0" max="180" value="45" step="1">
+                <span>°</span>
+            </div>
+            <div class="input-group">
+                <label for="velocity" data-i18n="velocity">Geschwindigkeit:</label>
+                <input type="number" id="velocity" min="10" max="200" value="100" step="5">
+            </div>
+            <button id="throwBtn" class="throw-btn" data-i18n="throwButton">BANANE WERFEN!</button>
+            <button id="hintBtn" class="hint-btn" data-i18n="hintButton">HINWEIS</button>
+            <button id="resetBtn" class="reset-btn" data-i18n="newGameButton">NEUES SPIEL</button>
+            <button id="settingsBtn" class="settings-btn" data-i18n="settingsButton">EINSTELLUNGEN</button>
+            <button id="creditsBtn" class="credits-btn" data-i18n="creditsButton">CREDITS</button>
+            <button id="keysBtn" class="keys-btn" data-i18n="keysButton">KEYS</button>
+        </div>
+
+        <div class="game-info">
+            <div id="currentPlayer">Spieler 1 ist dran</div>
+            <div id="gameMessage"></div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <h2 data-i18n="settingsTitle">Einstellungen</h2>
+            <div class="setting-item">
+                <label>
+                    <input type="checkbox" id="destroyBuildingToggle">
+                    <span data-i18n="destroyBuildingSetting">Gebäude zerstören</span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <label>
+                    <input type="checkbox" id="helpingModeToggle">
+                    <span data-i18n="helpingModeSetting">Hilfslinie anzeigen</span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <label>
+                    <input type="checkbox" id="musicToggle">
+                    <span data-i18n="musicEnabledSetting">In-Game Musik</span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <label for="musicProfileSelect" data-i18n="musicProfileSetting">Musik-Profil</label>
+                <select id="musicProfileSelect">
+                    <option value="pulse_soft">Pulse Soft</option>
+                    <option value="pulse_bright">Pulse Bright</option>
+                    <option value="pulse_crunch">Pulse Crunch</option>
+                </select>
+            </div>
+            <div class="setting-item music-actions">
+                <button id="generateMusicBtn" class="modal-btn secondary-btn" data-i18n="musicGenerateButton">MUSIK ERZEUGEN</button>
+                <div class="music-status">
+                    <span class="music-status-label" data-i18n="musicStatusLabel">Musikstatus:</span>
+                    <span id="musicStatusValue" data-i18n="musicStatusIdle">Leerlauf</span>
+                </div>
+            </div>
+            <button id="closeSettingsBtn" class="modal-btn" data-i18n="closeButton">Schließen</button>
+        </div>
+    </div>
+
+    <!-- Credits Modal -->
+    <div id="creditsModal" class="modal">
+        <div class="credits-window">
+            <h2 class="credits-title">CREDITS</h2>
+            <div class="credits-content">
+                <div class="credits-scroll">
+                    <div class="credits-text">
+                        <p class="credits-line"><canvas id="banana1" width="30" height="30"></canvas> freaxnx01 <canvas id="banana2" width="30" height="30"></canvas></p>
+                        <p class="credits-line"><canvas id="banana3" width="30" height="30"></canvas> Tschosi "forwardare" Ätti aka L.A. Brace <canvas id="banana4" width="30" height="30"></canvas></p>
+                        <p class="credits-dedication" data-i18n="dedication">Dieses Spiel ist Juliska gewidmet</p>
+                    </div>
+                </div>
+            </div>
+            <button id="closeCreditsBtn" class="modal-btn" data-i18n="closeButton">Schließen</button>
+        </div>
+    </div>
+
+    <!-- Keys Modal -->
+    <div id="keysModal" class="modal">
+        <div class="modal-content">
+            <h2 data-i18n="keysTitle">Tastenkombinationen</h2>
+            <div class="keys-list">
+                <div class="key-item">
+                    <span class="key-name">Enter</span>
+                    <span class="key-desc" data-i18n="keyEnter">Banane werfen</span>
+                </div>
+                <div class="key-item">
+                    <span class="key-name">B</span>
+                    <span class="key-desc" data-i18n="keyB">Lichter blinken (ein/aus)</span>
+                </div>
+                <div class="key-item">
+                    <span class="key-name">N</span>
+                    <span class="key-desc" data-i18n="keyN">Tag/Nacht wechseln</span>
+                </div>
+                <div class="key-item">
+                    <span class="key-name">H</span>
+                    <span class="key-desc" data-i18n="keyH">Herz anzeigen/ausblenden</span>
+                </div>
+                <div class="key-item">
+                    <span class="key-name">T</span>
+                    <span class="key-desc" data-i18n="keyT">Hilfslinie ein/aus</span>
+                </div>
+                <div class="key-item">
+                    <span class="key-name">P</span>
+                    <span class="key-desc" data-i18n="keyP">Spieler wechseln</span>
+                </div>
+                <div class="key-item">
+                    <span class="key-name">E</span>
+                    <span class="key-desc" data-i18n="keyE">Augen erstaunen ein/aus</span>
+                </div>
+                <div class="key-item">
+                    <span class="key-name">G</span>
+                    <span class="key-desc" data-i18n="keyG">Neue Skyline generieren</span>
+                </div>
+                <div class="key-item">
+                    <span class="key-name">M</span>
+                    <span class="key-desc" data-i18n="keyM">Musik ein/aus</span>
+                </div>
+            </div>
+            <button id="closeKeysBtn" class="modal-btn" data-i18n="closeButton">Schließen</button>
+        </div>
+    </div>
+
+    <script src="audio.js?v=20260219-1"></script>
+    <script src="gorillas.js?v=20260219-1"></script>
+</body>
+</html>
