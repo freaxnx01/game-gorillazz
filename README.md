@@ -4,7 +4,7 @@ A browser-based clone of the classic QBasic Gorillas game. Two gorillas stand on
 
 ## Play Online
 
-The game is automatically deployed and available at: **https://freaxnx01.github.io/game-gorillazz/**
+**▶️ Play it: https://github.freaxnx01.ch/game-gorillazz/**
 
 ## Features
 
