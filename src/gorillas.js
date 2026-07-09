@@ -9,7 +9,7 @@ canvas.height = 500;
 // Language translations
 const translations = {
     de: {
-        title: 'GORILLAS',
+        title: 'GORILLAZZ',
         player: 'Spieler',
         angle: 'Winkel:',
         velocity: 'Geschwindigkeit:',
@@ -63,7 +63,7 @@ const translations = {
         dedication: 'Dieses Spiel ist Juliska gewidmet'
     },
     en: {
-        title: 'GORILLAS',
+        title: 'GORILLAZZ',
         player: 'Player',
         angle: 'Angle:',
         velocity: 'Velocity:',
@@ -117,7 +117,7 @@ const translations = {
         dedication: 'This game is dedicated to Juliska'
     },
     hu: {
-        title: 'GORILLÁK',
+        title: 'GORILLAZZ',
         player: 'Játékos',
         angle: 'Szög:',
         velocity: 'Sebesség:',
