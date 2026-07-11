@@ -43,6 +43,7 @@
             <button id="throwBtn" class="throw-btn" data-i18n="throwButton">BANANE WERFEN!</button>
             <button id="hintBtn" class="hint-btn" data-i18n="hintButton">HINWEIS</button>
             <button id="resetBtn" class="reset-btn" data-i18n="newGameButton">NEUES SPIEL</button>
+            <button id="multiplayerBtn" class="multiplayer-btn" data-i18n="multiplayerButton">MEHRSPIELER</button>
             <button id="settingsBtn" class="settings-btn" data-i18n="settingsButton">EINSTELLUNGEN</button>
             <button id="creditsBtn" class="credits-btn" data-i18n="creditsButton">CREDITS</button>
             <button id="keysBtn" class="keys-btn" data-i18n="keysButton">KEYS</button>
@@ -51,6 +52,7 @@
         <div class="game-info">
             <div id="currentPlayer">Spieler 1 ist dran</div>
             <div id="gameMessage"></div>
+            <div id="netStatus" class="net-status"></div>
         </div>
     </div>
 
@@ -155,6 +157,50 @@
                 </div>
             </div>
             <button id="closeKeysBtn" class="modal-btn" data-i18n="closeButton">Schließen</button>
+        </div>
+    </div>
+
+    <!-- Multiplayer (WebRTC) Modal -->
+    <div id="multiplayerModal" class="modal">
+        <div class="modal-content mp-modal">
+            <h2 data-i18n="mpTitle">Mehrspieler (Peer-to-Peer)</h2>
+
+            <div id="mp-panel-choose" class="mp-panel">
+                <p class="mp-intro" data-i18n="mpChoosePrompt">Spiele online gegen einen Freund – ganz ohne Server. Ein Code wird kopiert und eingefügt.</p>
+                <button id="mp-choose-host" class="modal-btn" data-i18n="mpHostBtn">Spiel hosten</button>
+                <button id="mp-choose-join" class="modal-btn" data-i18n="mpJoinBtn">Mit Code beitreten</button>
+            </div>
+
+            <div id="mp-panel-host" class="mp-panel mp-hidden">
+                <h3 data-i18n="mpHostTitle">Spiel hosten</h3>
+                <div class="mp-step"><span class="mp-step-n">1</span><span data-i18n="mpStepInvite">Sende diesen Einladungscode an deinen Freund</span></div>
+                <textarea id="mp-host-code" class="mp-code" readonly></textarea>
+                <button id="mp-copy-host" class="modal-btn secondary-btn" data-i18n="mpCopyInvite">Einladungscode kopieren</button>
+                <div class="mp-step"><span class="mp-step-n">2</span><span data-i18n="mpStepAnswer">Füge hier den Antwortcode deines Freundes ein</span></div>
+                <textarea id="mp-host-answer" class="mp-code"></textarea>
+                <button id="mp-host-connect" class="modal-btn" data-i18n="mpConnectBtn">Verbinden</button>
+                <div id="mp-host-status" class="mp-status"></div>
+                <button id="mp-back-host" class="modal-btn secondary-btn" data-i18n="mpBackBtn">Zurück</button>
+            </div>
+
+            <div id="mp-panel-join" class="mp-panel mp-hidden">
+                <h3 data-i18n="mpJoinTitle">Spiel beitreten</h3>
+                <div class="mp-step"><span class="mp-step-n">1</span><span data-i18n="mpStepPasteInvite">Füge den Einladungscode des Hosts ein</span></div>
+                <textarea id="mp-join-code" class="mp-code"></textarea>
+                <button id="mp-join-reply" class="modal-btn" data-i18n="mpCreateReplyBtn">Antwortcode erstellen</button>
+                <div class="mp-step"><span class="mp-step-n">2</span><span data-i18n="mpStepReply">Sende diesen Antwortcode zurück an den Host</span></div>
+                <textarea id="mp-join-answer" class="mp-code" readonly></textarea>
+                <button id="mp-copy-join" class="modal-btn secondary-btn" data-i18n="mpCopyReply">Antwortcode kopieren</button>
+                <div id="mp-join-status" class="mp-status"></div>
+                <button id="mp-back-join" class="modal-btn secondary-btn" data-i18n="mpBackBtn">Zurück</button>
+            </div>
+
+            <div id="mp-panel-connected" class="mp-panel mp-hidden">
+                <p class="mp-intro" data-i18n="mpConnected">Verbunden! Los geht’s!</p>
+                <button id="mp-disconnect" class="modal-btn secondary-btn" data-i18n="mpDisconnectBtn">Verbindung trennen</button>
+            </div>
+
+            <button id="closeMultiplayerBtn" class="modal-btn" data-i18n="closeButton">Schließen</button>
         </div>
     </div>
 

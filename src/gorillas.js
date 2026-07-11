@@ -6,6 +6,20 @@ const ctx = canvas.getContext('2d');
 canvas.width = 1100;
 canvas.height = 500;
 
+// Seeded RNG so both peers generate identical skylines/wind in multiplayer.
+// Defaults to Math.random in single-player; seedRng() switches to a deterministic
+// stream keyed by a shared seed exchanged over the network.
+function mulberry32(a) {
+    return function () {
+        a |= 0; a = a + 0x6D2B79F5 | 0;
+        let t = Math.imul(a ^ a >>> 15, 1 | a);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+}
+let rng = Math.random;
+function seedRng(seed) { rng = mulberry32((seed >>> 0) || 1); }
+
 // Language translations
 const translations = {
     de: {
@@ -60,7 +74,37 @@ const translations = {
         keyE: 'Augen erstaunen ein/aus',
         keyG: 'Neue Skyline generieren',
         keyM: 'Musik ein/aus',
-        dedication: 'Dieses Spiel ist Juliska gewidmet'
+        dedication: 'Dieses Spiel ist Juliska gewidmet',
+        multiplayerButton: 'MEHRSPIELER',
+        mpTitle: 'Mehrspieler (Peer-to-Peer)',
+        mpChoosePrompt: 'Spiele online gegen einen Freund – ganz ohne Server. Ein Code wird kopiert und eingefügt.',
+        mpHostBtn: 'Spiel hosten',
+        mpJoinBtn: 'Mit Code beitreten',
+        mpHostTitle: 'Spiel hosten',
+        mpJoinTitle: 'Spiel beitreten',
+        mpStepInvite: 'Sende diesen Einladungscode an deinen Freund',
+        mpCopyInvite: 'Einladungscode kopieren',
+        mpStepAnswer: 'Füge hier den Antwortcode deines Freundes ein',
+        mpConnectBtn: 'Verbinden',
+        mpStepPasteInvite: 'Füge den Einladungscode des Hosts ein',
+        mpCreateReplyBtn: 'Antwortcode erstellen',
+        mpStepReply: 'Sende diesen Antwortcode zurück an den Host',
+        mpCopyReply: 'Antwortcode kopieren',
+        mpBackBtn: 'Zurück',
+        mpDisconnectBtn: 'Verbindung trennen',
+        mpCreating: 'Code wird erstellt…',
+        mpWaiting: 'Warte auf den Antwortcode…',
+        mpConnecting: 'Verbinde…',
+        mpConnected: 'Verbunden! Los geht’s!',
+        mpSendReply: 'Sende den Antwortcode an den Host und warte…',
+        mpBadCode: 'Code ungültig – füge den vollständigen Code ein.',
+        mpCodeError: 'Code konnte nicht erstellt werden.',
+        mpCopied: 'Kopiert!',
+        netYouAre: 'Du bist Spieler {player}',
+        netYourTurn: 'du bist dran',
+        netOpponentTurn: 'Gegner ist dran',
+        netNotYourTurn: 'Du bist nicht dran!',
+        netDisconnected: 'Verbindung getrennt – zurück im lokalen Spiel.'
     },
     en: {
         title: 'GORILLAZZ',
@@ -114,7 +158,37 @@ const translations = {
         keyE: 'Toggle astonished eyes',
         keyG: 'Generate new skyline',
         keyM: 'Toggle music on/off',
-        dedication: 'This game is dedicated to Juliska'
+        dedication: 'This game is dedicated to Juliska',
+        multiplayerButton: 'MULTIPLAYER',
+        mpTitle: 'Multiplayer (Peer-to-Peer)',
+        mpChoosePrompt: 'Play a friend online with no server — just copy and paste a connect code.',
+        mpHostBtn: 'Host a game',
+        mpJoinBtn: 'Join with a code',
+        mpHostTitle: 'Host a game',
+        mpJoinTitle: 'Join a game',
+        mpStepInvite: 'Send this invite code to your friend',
+        mpCopyInvite: 'Copy invite code',
+        mpStepAnswer: 'Paste their reply code here',
+        mpConnectBtn: 'Connect',
+        mpStepPasteInvite: 'Paste the host’s invite code',
+        mpCreateReplyBtn: 'Create reply code',
+        mpStepReply: 'Send this reply code back to the host',
+        mpCopyReply: 'Copy reply code',
+        mpBackBtn: 'Back',
+        mpDisconnectBtn: 'Disconnect',
+        mpCreating: 'Creating code…',
+        mpWaiting: 'Waiting for the reply code…',
+        mpConnecting: 'Connecting…',
+        mpConnected: 'Connected! Let’s play!',
+        mpSendReply: 'Send the reply code to the host, then wait…',
+        mpBadCode: 'That code didn’t parse — paste the full code.',
+        mpCodeError: 'Could not create code.',
+        mpCopied: 'Copied!',
+        netYouAre: 'You are Player {player}',
+        netYourTurn: 'your turn',
+        netOpponentTurn: 'opponent’s turn',
+        netNotYourTurn: 'Not your turn!',
+        netDisconnected: 'Disconnected — back to local play.'
     },
     hu: {
         title: 'GORILLAZZ',
@@ -168,7 +242,37 @@ const translations = {
         keyE: 'Csodálkozó szemek ki/be',
         keyG: 'Új égvonal generálása',
         keyM: 'Zene be/ki',
-        dedication: 'Ez a játék Juliskának van szentelve'
+        dedication: 'Ez a játék Juliskának van szentelve',
+        multiplayerButton: 'TÖBBJÁTÉKOS',
+        mpTitle: 'Többjátékos (Peer-to-Peer)',
+        mpChoosePrompt: 'Játssz online egy barátoddal szerver nélkül – csak másold ki és illeszd be a kódot.',
+        mpHostBtn: 'Játék indítása',
+        mpJoinBtn: 'Csatlakozás kóddal',
+        mpHostTitle: 'Játék indítása',
+        mpJoinTitle: 'Csatlakozás',
+        mpStepInvite: 'Küldd el ezt a meghívókódot a barátodnak',
+        mpCopyInvite: 'Meghívókód másolása',
+        mpStepAnswer: 'Illeszd be ide a válaszkódját',
+        mpConnectBtn: 'Csatlakozás',
+        mpStepPasteInvite: 'Illeszd be a gazda meghívókódját',
+        mpCreateReplyBtn: 'Válaszkód létrehozása',
+        mpStepReply: 'Küldd vissza ezt a válaszkódot a gazdának',
+        mpCopyReply: 'Válaszkód másolása',
+        mpBackBtn: 'Vissza',
+        mpDisconnectBtn: 'Kapcsolat bontása',
+        mpCreating: 'Kód létrehozása…',
+        mpWaiting: 'Várakozás a válaszkódra…',
+        mpConnecting: 'Csatlakozás…',
+        mpConnected: 'Csatlakozva! Kezdődik!',
+        mpSendReply: 'Küldd el a válaszkódot a gazdának, majd várj…',
+        mpBadCode: 'A kód érvénytelen – illeszd be a teljes kódot.',
+        mpCodeError: 'A kód létrehozása sikertelen.',
+        mpCopied: 'Másolva!',
+        netYouAre: '{player}. játékos vagy',
+        netYourTurn: 'te jössz',
+        netOpponentTurn: 'ellenfél jön',
+        netNotYourTurn: 'Nem te jössz!',
+        netDisconnected: 'Kapcsolat megszakadt – vissza a helyi játékhoz.'
     }
 };
 
@@ -218,8 +322,33 @@ const game = {
     turnCount: 0,
     stars: [], // Random star positions
     helicopter: null,
-    f16: null
+    f16: null,
+    seed: 0
 };
+
+// ---- Multiplayer (serverless WebRTC) state ----
+// net.active: a networked match is running; net.myPlayer: which player (1=host, 2=guest)
+// this client controls; sync is thrower-authoritative (see net block near end of file).
+const net = {
+    active: false,
+    connected: false,
+    link: null,
+    myPlayer: 1,
+    iThrew: false,
+    pendingOutcome: null,
+    awaitingOutcome: false,
+    newSeed: 0
+};
+
+function isNet() { return net.active && net.connected; }
+function isMyTurn() { return game.currentPlayer === net.myPlayer; }
+
+function updateThrowButtonState() {
+    const btn = document.getElementById('throwBtn');
+    if (!btn) return;
+    if (game.animating) { btn.disabled = true; return; }
+    btn.disabled = isNet() ? !isMyTurn() : false;
+}
 
 const audioEngine = typeof AudioEngine === 'function'
     ? new AudioEngine({
@@ -262,7 +391,7 @@ class Building {
 
     randomBuildingColor() {
         const colors = ['#8B4513', '#A0522D', '#CD853F', '#D2691E', '#8B0000', '#4B0082'];
-        return colors[Math.floor(Math.random() * colors.length)];
+        return colors[Math.floor(rng() * colors.length)];
     }
 
     generateWindows() {
@@ -279,7 +408,7 @@ class Building {
                     y: y,
                     width: windowWidth,
                     height: windowHeight,
-                    lit: Math.random() > 0.5
+                    lit: rng() > 0.5
                 });
             }
         }
@@ -651,12 +780,15 @@ class Banana {
                 // Direct hit
                 if (distance < 35) {
                     this.active = false;
+                    // Cosmetic bananas (remote-throw replay) must not mutate game state;
+                    // the authoritative outcome message decides the result.
+                    if (this.cosmetic) return 'cosmeticDone';
                     gorilla.destroyed = true;
                     return gorilla.player;
                 }
 
                 // Near miss (close but not hit) - make gorilla astonished
-                if (distance < 60 && !gorilla.astonished) {
+                if (!this.cosmetic && distance < 60 && !gorilla.astonished) {
                     gorilla.astonished = true;
                     gorilla.astonishedTimer = 120; // Stay astonished for ~2 seconds
                 }
@@ -1088,33 +1220,38 @@ function getSkyColors() {
 }
 
 // Initialize game
-function initGame() {
+function initGame(seed) {
+    // Seed the RNG so the skyline, wind and stars are reproducible from `seed`.
+    // Single-player passes no seed and gets a fresh random one each round.
+    game.seed = (seed == null) ? ((Math.random() * 1e9) | 0) : (seed >>> 0);
+    seedRng(game.seed);
+
     game.buildings = [];
     game.gorillas = [];
     game.banana = null; // Clear any existing banana
     game.currentPlayer = 1;
-    game.wind = (Math.random() - 0.5) * 4;
+    game.wind = (rng() - 0.5) * 4;
     game.turnCount = 0;
 
     // Set random turns until time change (between 1 and half max score)
-    game.turnsUntilTimeChange = Math.floor(Math.random() * 5) + 2;
+    game.turnsUntilTimeChange = Math.floor(rng() * 5) + 2;
 
     // Generate random star positions (used for night sky)
     game.stars = [];
     for (let i = 0; i < 50; i++) {
         game.stars.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * (canvas.height / 2),
-            size: 0.5 + Math.random() * 1.5,
-            twinkle: Math.random() * Math.PI * 2
+            x: rng() * canvas.width,
+            y: rng() * (canvas.height / 2),
+            size: 0.5 + rng() * 1.5,
+            twinkle: rng() * Math.PI * 2
         });
     }
 
     // Generate random buildings
     let x = 0;
     while (x < canvas.width) {
-        const width = 60 + Math.random() * 60;
-        const height = 100 + Math.random() * 250;
+        const width = 60 + rng() * 60;
+        const height = 100 + rng() * 250;
         game.buildings.push(new Building(x, width, height));
         x += width + 10;
     }
@@ -1137,6 +1274,7 @@ function initGame() {
     ));
 
     updateGameInfo();
+    updateThrowButtonState();
     if (settings.musicEnabled && audioEngine && audioEngine.hasLoop()) {
         audioEngine.playLoop();
     }
@@ -1362,11 +1500,25 @@ function animate() {
     }
 }
 
-// Handle banana result
+// Handle banana result (runs on the thrower). In a networked match the thrower is
+// authoritative: it broadcasts the resolved outcome so the peer applies identical state.
 function handleBananaResult(result) {
+    const amThrower = isNet() && net.iThrew;
+
     if (result === 1 || result === 2) {
         // Hit a gorilla!
-        const explosion = new Explosion(game.banana.x, game.banana.y);
+        const bx = game.banana.x, by = game.banana.y;
+        const explosion = new Explosion(bx, by);
+        const winner = result === 1 ? 2 : 1;
+        const nextScores = game.scores.slice();
+        nextScores[winner - 1]++;
+
+        if (amThrower) {
+            net.newSeed = (Math.random() * 1e9) | 0;
+            net.iThrew = false;
+            netSend({ ty: 'outcome', kind: 'gorilla', ix: bx, iy: by,
+                loser: result, winner, scores: nextScores, seed: net.newSeed });
+        }
 
         // Clear banana immediately after hit
         game.banana = null;
@@ -1379,14 +1531,13 @@ function handleBananaResult(result) {
             if (!explosion.isDone()) {
                 requestAnimationFrame(explode);
             } else {
-                const winner = result === 1 ? 2 : 1;
                 game.scores[winner - 1]++;
                 updateScores();
                 showMessage(t('winsRound', {player: winner}));
                 setTimeout(() => {
-                    initGame();
+                    initGame(isNet() ? net.newSeed : undefined);
                     game.animating = false;
-                    document.getElementById('throwBtn').disabled = false;
+                    updateThrowButtonState();
                 }, 2000);
             }
         }
@@ -1394,10 +1545,18 @@ function handleBananaResult(result) {
     } else if (result.type === 'building') {
         // Hit a building - show explosion and damage
         const explosion = new Explosion(result.x, result.y);
+        const nextPlayer = game.currentPlayer === 1 ? 2 : 1;
 
         // Add damage to the building (only if setting is enabled)
         if (settings.destroyBuildings) {
             result.building.addDamage(result.x, result.y);
+        }
+
+        if (amThrower) {
+            net.iThrew = false;
+            netSend({ ty: 'outcome', kind: 'building', ix: result.x, iy: result.y,
+                bIdx: game.buildings.indexOf(result.building),
+                damaged: !!settings.destroyBuildings, currentPlayer: nextPlayer });
         }
 
         // Clear banana immediately after hit
@@ -1413,25 +1572,30 @@ function handleBananaResult(result) {
             } else {
                 // Switch player after explosion
                 showMessage(t('hitBuilding'));
-                game.currentPlayer = game.currentPlayer === 1 ? 2 : 1;
+                game.currentPlayer = nextPlayer;
 
                 setTimeout(() => {
                     game.animating = false;
                     updateGameInfo();
-                    document.getElementById('throwBtn').disabled = false;
+                    updateThrowButtonState();
                 }, 500);
             }
         }
         explode();
     } else {
         // Miss - switch player
+        const nextPlayer = game.currentPlayer === 1 ? 2 : 1;
+        if (amThrower) {
+            net.iThrew = false;
+            netSend({ ty: 'outcome', kind: 'miss', currentPlayer: nextPlayer });
+        }
         showMessage(t('missed'));
-        game.currentPlayer = game.currentPlayer === 1 ? 2 : 1;
+        game.currentPlayer = nextPlayer;
 
         setTimeout(() => {
             game.animating = false;
             updateGameInfo();
-            document.getElementById('throwBtn').disabled = false;
+            updateThrowButtonState();
         }, 1000);
     }
 }
@@ -1474,6 +1638,8 @@ function updateGameInfo() {
     const playerSettings = game.playerSettings[game.currentPlayer - 1];
     document.getElementById('angle').value = playerSettings.angle;
     document.getElementById('velocity').value = playerSettings.velocity;
+
+    updateNetStatus();
 }
 
 // Save current player settings
@@ -1666,6 +1832,7 @@ function calculateHint() {
 // Event listeners
 document.getElementById('throwBtn').addEventListener('click', () => {
     if (game.animating) return;
+    if (isNet() && !isMyTurn()) { showMessage(t('netNotYourTurn')); return; }
     ensureAudioReady();
 
     const angle = parseInt(document.getElementById('angle').value);
@@ -1681,6 +1848,12 @@ document.getElementById('throwBtn').addEventListener('click', () => {
 
     // Save the current player's settings before throwing
     savePlayerSettings();
+
+    // Broadcast the throw so the peer replays it (time-of-day is synced along with it).
+    if (isNet()) {
+        net.iThrew = true;
+        netSend({ ty: 'throw', angle, velocity, tod: game.timeOfDay });
+    }
 
     const gorilla = game.gorillas[game.currentPlayer - 1];
     const bananaData = gorilla.throwBanana(angle, velocity, game.currentPlayer);
@@ -1707,6 +1880,7 @@ document.getElementById('hintBtn').addEventListener('click', () => {
 });
 
 document.getElementById('resetBtn').addEventListener('click', () => {
+    if (game.animating) return;
     game.scores = [0, 0];
     updateScores();
     if (!settings.musicEnabled && audioEngine) {
@@ -1715,7 +1889,16 @@ document.getElementById('resetBtn').addEventListener('click', () => {
     if (settings.musicEnabled && audioEngine && audioEngine.hasLoop()) {
         audioEngine.playLoop();
     }
-    initGame();
+    // In a networked match either side may start a fresh game; broadcast the seed
+    // so both peers build the identical skyline and reset scores together.
+    if (isNet()) {
+        const seed = (Math.random() * 1e9) | 0;
+        game.timeOfDay = 'day';
+        netSend({ ty: 'newgame', seed, scores: [0, 0], destroy: !!settings.destroyBuildings });
+        initGame(seed);
+    } else {
+        initGame();
+    }
 });
 
 // Keyboard controls
@@ -1733,8 +1916,8 @@ document.addEventListener('keydown', (e) => {
         draw(); // Redraw to show change
     }
 
-    // Toggle day/night with 'n' key
-    if (e.key === 'n' || e.key === 'N') {
+    // Toggle day/night with 'n' key (disabled in multiplayer: would desync the peers)
+    if ((e.key === 'n' || e.key === 'N') && !isNet()) {
         // Toggle between day and night
         if (game.timeOfDay === 'day') {
             game.timeOfDay = 'night';
@@ -1781,8 +1964,8 @@ document.addEventListener('keydown', (e) => {
         draw(); // Redraw to show the change
     }
 
-    // Switch players with 'p' key
-    if (e.key === 'p' || e.key === 'P') {
+    // Switch players with 'p' key (disabled in multiplayer: turn order is authoritative)
+    if ((e.key === 'p' || e.key === 'P') && !isNet()) {
         if (!game.animating) {
             game.currentPlayer = game.currentPlayer === 1 ? 2 : 1;
             updateGameInfo();
@@ -1798,8 +1981,8 @@ document.addEventListener('keydown', (e) => {
         draw(); // Redraw to show the change
     }
 
-    // Generate new skyline with 'g' key
-    if (e.key === 'g' || e.key === 'G') {
+    // Generate new skyline with 'g' key (disabled in multiplayer; use New Game to resync)
+    if ((e.key === 'g' || e.key === 'G') && !isNet()) {
         if (!game.animating) {
             // Reset heart if active
             if (settings.heartActive && settings.heartBuilding) {
@@ -2020,6 +2203,332 @@ function drawCreditsBanana(canvasId) {
 
     ctx.restore();
 }
+
+// ============================================================================
+//  Serverless peer-to-peer multiplayer (WebRTC, manual copy/paste signalling)
+//  Pattern mirrors game-tank-toys / game-tschau-sepp: no backend, an offer code
+//  and an answer code are exchanged by hand. Sync is thrower-authoritative.
+// ============================================================================
+
+/* ---- connect-code codec: JSON -> deflate-raw -> base64url ---- */
+function _b64(u8) {
+    let s = '';
+    for (let i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]);
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function _unb64(s) {
+    s = s.replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    const bin = atob(s), u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return u8;
+}
+async function encodeCode(obj) {
+    const json = JSON.stringify(obj);
+    try {
+        const cs = new CompressionStream('deflate-raw');
+        const buf = await new Response(new Blob([json]).stream().pipeThrough(cs)).arrayBuffer();
+        return 'G1.' + _b64(new Uint8Array(buf));
+    } catch (e) {
+        return 'G0.' + _b64(new TextEncoder().encode(json));
+    }
+}
+async function decodeCode(str) {
+    str = (str || '').trim().replace(/\s+/g, '');
+    const i = str.indexOf('.');
+    if (i < 0) throw new Error('bad code');
+    const tag = str.slice(0, i), bytes = _unb64(str.slice(i + 1));
+    let text;
+    if (tag === 'G1') {
+        const ds = new DecompressionStream('deflate-raw');
+        const buf = await new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer();
+        text = new TextDecoder().decode(buf);
+    } else {
+        text = new TextDecoder().decode(bytes);
+    }
+    return JSON.parse(text);
+}
+
+/* ---- WebRTC manual-signalling link ---- */
+class NetLink {
+    constructor(onMsg, onState) {
+        this.onMsg = onMsg; this.onState = onState; this.ch = null;
+        this.pc = new RTCPeerConnection({
+            iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }]
+        });
+        this.pc.onconnectionstatechange = () => this.onState(this.pc.connectionState);
+    }
+    _wire(ch) {
+        this.ch = ch;
+        ch.onopen = () => this.onState('open');
+        ch.onclose = () => this.onState('closed');
+        ch.onmessage = (e) => { try { this.onMsg(JSON.parse(e.data)); } catch (_) {} };
+    }
+    _gather() {
+        return new Promise((res) => {
+            if (this.pc.iceGatheringState === 'complete') return res();
+            const t = setTimeout(res, 4000);
+            this.pc.addEventListener('icegatheringstatechange', () => {
+                if (this.pc.iceGatheringState === 'complete') { clearTimeout(t); res(); }
+            });
+        });
+    }
+    async host() {
+        this._wire(this.pc.createDataChannel('game'));
+        await this.pc.setLocalDescription(await this.pc.createOffer());
+        await this._gather();
+        return encodeCode(this.pc.localDescription);
+    }
+    async acceptAnswer(code) {
+        await this.pc.setRemoteDescription(await decodeCode(code));
+    }
+    async join(code) {
+        this.pc.ondatachannel = (e) => this._wire(e.channel);
+        await this.pc.setRemoteDescription(await decodeCode(code));
+        await this.pc.setLocalDescription(await this.pc.createAnswer());
+        await this._gather();
+        return encodeCode(this.pc.localDescription);
+    }
+    send(o) { if (this.ch && this.ch.readyState === 'open') this.ch.send(JSON.stringify(o)); }
+    close() { try { this.pc.close(); } catch (_) {} }
+}
+
+function netSend(o) { if (net.link) net.link.send(o); }
+
+/* ---- UI helpers ---- */
+function mpEl(id) { return document.getElementById(id); }
+function openMultiplayerModal() {
+    mpShowPanel('choose');
+    mpEl('multiplayerModal').classList.add('show');
+}
+function closeMultiplayerModal() { mpEl('multiplayerModal').classList.remove('show'); }
+function mpShowPanel(name) {
+    ['choose', 'host', 'join', 'connected'].forEach(p => {
+        const el = mpEl('mp-panel-' + p);
+        if (el) el.classList.toggle('mp-hidden', p !== name);
+    });
+}
+function mpCopy(text, btn) {
+    if (!text) return;
+    const restore = () => { const o = btn.dataset.label || btn.textContent; btn.dataset.label = o; btn.textContent = t('mpCopied'); setTimeout(() => { btn.textContent = o; }, 1200); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(restore, restore);
+    else restore();
+}
+function updateNetStatus() {
+    const el = mpEl('netStatus');
+    if (!el) return;
+    if (!isNet()) { el.textContent = ''; el.classList.remove('show'); return; }
+    const who = t('netYouAre', { player: net.myPlayer });
+    const turn = isMyTurn() ? t('netYourTurn') : t('netOpponentTurn');
+    el.textContent = who + ' — ' + turn;
+    el.classList.add('show');
+}
+
+/* ---- connection flows ---- */
+function newLink() {
+    if (net.link) net.link.close();
+    net.link = new NetLink((m) => netOnMessage(m), (s) => netOnState(s));
+}
+async function hostFlow() {
+    mpShowPanel('host');
+    net.active = false; net.connected = false; net.myPlayer = 1;
+    const codeEl = mpEl('mp-host-code'), st = mpEl('mp-host-status');
+    codeEl.value = ''; st.textContent = t('mpCreating'); st.className = 'mp-status';
+    newLink();
+    try {
+        codeEl.value = await net.link.host();
+        st.textContent = t('mpWaiting');
+    } catch (e) {
+        st.textContent = t('mpCodeError'); st.className = 'mp-status err';
+    }
+}
+async function hostAccept() {
+    const st = mpEl('mp-host-status');
+    try {
+        st.className = 'mp-status'; st.textContent = t('mpConnecting');
+        await net.link.acceptAnswer(mpEl('mp-host-answer').value);
+    } catch (e) { st.className = 'mp-status err'; st.textContent = t('mpBadCode'); }
+}
+async function joinFlow() {
+    const st = mpEl('mp-join-status');
+    net.active = false; net.connected = false; net.myPlayer = 2;
+    newLink();
+    try {
+        st.className = 'mp-status'; st.textContent = t('mpCreating');
+        mpEl('mp-join-answer').value = await net.link.join(mpEl('mp-join-code').value);
+        st.textContent = t('mpSendReply');
+    } catch (e) { st.className = 'mp-status err'; st.textContent = t('mpBadCode'); }
+}
+
+function startNetGame(seed, scores) {
+    net.active = true;
+    net.pendingOutcome = null; net.awaitingOutcome = false; net.iThrew = false;
+    game.timeOfDay = 'day';
+    game.scores = scores.slice();
+    initGame(seed);           // sets currentPlayer = 1 (host throws first)
+    game.animating = false;
+    updateScores();
+    updateGameInfo();
+    updateThrowButtonState();
+    mpShowPanel('connected');
+    closeMultiplayerModal();
+    showMessage(t('mpConnected'));
+}
+
+function netOnState(s) {
+    if (s === 'open') {
+        net.connected = true;
+        if (net.myPlayer === 1) {
+            // Host is authoritative for the initial board.
+            const seed = (Math.random() * 1e9) | 0;
+            netSend({ ty: 'newgame', seed, scores: [0, 0], destroy: !!settings.destroyBuildings });
+            startNetGame(seed, [0, 0]);
+        } else {
+            const st = mpEl('mp-join-status');
+            if (st) { st.className = 'mp-status ok'; st.textContent = t('mpConnected'); }
+        }
+    } else if (s === 'failed' || s === 'disconnected' || s === 'closed') {
+        if (net.active || net.connected) handleNetDisconnect(true);
+    }
+}
+
+function netOnMessage(m) {
+    switch (m.ty) {
+        case 'newgame':
+            settings.destroyBuildings = !!m.destroy;
+            { const tg = mpEl('destroyBuildingToggle'); if (tg) tg.checked = settings.destroyBuildings; }
+            startNetGame(m.seed, m.scores || [0, 0]);
+            break;
+        case 'throw':
+            onRemoteThrow(m);
+            break;
+        case 'outcome':
+            net.pendingOutcome = m;
+            tryApplyOutcome();
+            break;
+        case 'bye':
+            handleNetDisconnect(true);
+            break;
+    }
+}
+
+/* ---- remote throw replay (cosmetic) ---- */
+function onRemoteThrow(m) {
+    if (!isNet()) return;
+    game.timeOfDay = m.tod || game.timeOfDay;
+    const gorilla = game.gorillas[game.currentPlayer - 1];
+    if (!gorilla) return;
+    const data = gorilla.throwBanana(m.angle, m.velocity, game.currentPlayer);
+    game.banana = new Banana(data.x, data.y, data.vx, data.vy, game.currentPlayer);
+    game.banana.cosmetic = true;
+    game.animating = true;
+    net.awaitingOutcome = false;
+    updateThrowButtonState();
+    showMessage(t('bananaInFlight'));
+    animateRemote();
+}
+function animateRemote() {
+    if (!game.banana || !game.banana.cosmetic) return;
+    const r = game.banana.update();
+    draw();
+    if (r === 'flying') {
+        requestAnimationFrame(animateRemote);
+    } else {
+        game.banana = null;
+        draw();
+        net.awaitingOutcome = true;   // local flight done; wait for authoritative outcome
+        tryApplyOutcome();
+    }
+}
+function tryApplyOutcome() {
+    if (net.pendingOutcome && net.awaitingOutcome) {
+        const m = net.pendingOutcome;
+        net.pendingOutcome = null; net.awaitingOutcome = false;
+        applyRemoteOutcome(m);
+    }
+}
+function playExplosion(x, y, onDone) {
+    const explosion = new Explosion(x, y);
+    (function step() {
+        draw();
+        explosion.update();
+        explosion.draw();
+        if (!explosion.isDone()) requestAnimationFrame(step);
+        else if (onDone) onDone();
+    })();
+}
+function applyRemoteOutcome(m) {
+    game.banana = null;
+    game.animating = true;
+    if (m.kind === 'gorilla') {
+        const loser = game.gorillas[m.loser - 1];
+        if (loser) loser.destroyed = true;
+        playExplosion(m.ix, m.iy, () => {
+            game.scores = m.scores.slice();
+            updateScores();
+            showMessage(t('winsRound', { player: m.winner }));
+            setTimeout(() => {
+                initGame(m.seed);
+                game.scores = m.scores.slice();
+                updateScores();
+                game.animating = false;
+                updateGameInfo();
+                updateThrowButtonState();
+            }, 2000);
+        });
+    } else if (m.kind === 'building') {
+        if (m.damaged && game.buildings[m.bIdx]) game.buildings[m.bIdx].addDamage(m.ix, m.iy);
+        playExplosion(m.ix, m.iy, () => {
+            showMessage(t('hitBuilding'));
+            game.currentPlayer = m.currentPlayer;
+            setTimeout(() => {
+                game.animating = false;
+                updateGameInfo();
+                updateThrowButtonState();
+            }, 500);
+        });
+    } else { // miss
+        showMessage(t('missed'));
+        game.currentPlayer = m.currentPlayer;
+        setTimeout(() => {
+            game.animating = false;
+            updateGameInfo();
+            updateThrowButtonState();
+        }, 1000);
+    }
+}
+
+function handleNetDisconnect(notify) {
+    const wasActive = net.active || net.connected;
+    net.active = false; net.connected = false;
+    net.pendingOutcome = null; net.awaitingOutcome = false; net.iThrew = false;
+    if (net.link) { try { net.link.close(); } catch (e) {} net.link = null; }
+    game.animating = false;
+    if (game.banana && game.banana.cosmetic) game.banana = null;
+    updateNetStatus();
+    updateThrowButtonState();
+    if (notify && wasActive) showMessage(t('netDisconnected'));
+    draw();
+}
+
+/* ---- multiplayer UI wiring ---- */
+(function wireMultiplayerUI() {
+    const on = (id, ev, fn) => { const el = mpEl(id); if (el) el.addEventListener(ev, fn); };
+    on('multiplayerBtn', 'click', openMultiplayerModal);
+    on('mp-choose-host', 'click', hostFlow);
+    on('mp-choose-join', 'click', () => { mpShowPanel('join'); mpEl('mp-join-code').value = ''; mpEl('mp-join-answer').value = ''; mpEl('mp-join-status').textContent = ''; });
+    on('mp-back-host', 'click', () => mpShowPanel('choose'));
+    on('mp-back-join', 'click', () => mpShowPanel('choose'));
+    on('mp-copy-host', 'click', (e) => mpCopy(mpEl('mp-host-code').value, e.currentTarget));
+    on('mp-copy-join', 'click', (e) => mpCopy(mpEl('mp-join-answer').value, e.currentTarget));
+    on('mp-host-connect', 'click', hostAccept);
+    on('mp-join-reply', 'click', joinFlow);
+    on('mp-disconnect', 'click', () => { netSend({ ty: 'bye' }); handleNetDisconnect(false); showMessage(t('netDisconnected')); });
+    on('closeMultiplayerBtn', 'click', closeMultiplayerModal);
+    on('multiplayerModal', 'click', (e) => { if (e.target.id === 'multiplayerModal') closeMultiplayerModal(); });
+})();
+
+window.addEventListener('pagehide', () => { if (net.link) netSend({ ty: 'bye' }); });
 
 // Initialize game on load
 initGame();
